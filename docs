@@ -1,0 +1,27 @@
+[
+  {
+    "id": "AID-001",
+    "title": "Containment Security Classification",
+    "pdf": "docs/AID-001 - ContainmentSecurity.pdf"
+  },
+  {
+    "id": "AID-002",
+    "title": "The First Protocol",
+    "pdf": "docs/TheFirstProtocol.pdf"
+  },
+  {
+    "id": "AID-003",
+    "title": "The Sandstorm Report",
+    "pdf": "docs/SandstormReport.pdf"
+  },
+  {
+    "id": "AID-004",
+    "title": "Object SCP-1147",
+    "pdf": "docs/SCP-1147.pdf"
+  },
+  {
+    "id": "AID-013",
+    "title": "Interdimensional Bridging Device Procedure",
+    "pdf": "docs/AID-013 - Interdimensional Bridging Device Procedure.pdf"
+  }
+]
