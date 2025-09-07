@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document Viewer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="document-page">
+    <header class="container d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center logo-wrapper">
+          <img src="images/aurora.png" alt="Aurora Logo" class="logo-img" />
+          <h1 class="mb-0">Aurora Research Corporation</h1>
+        </div>
+
+        <nav>
+          <a href="./mainARC.html">Home</a>
+          <a href="index.html#features">Features</a>
+          <a href="index.html#discord">
+            <i class="fab fa-discord me-1"></i>Discord
+          </a>
+        </nav>
+
+        </header>
+    <div class="overlay"></div>
+    <main class="doc-flex">
+      <!-- Sidebar -->
+        <aside class="doc-sidebar p-3">
+          <input type="text" class="form-control mb-4" id="searchInput" placeholder="Search documents...">
+
+          <div class="popular-searches mb-3 text-center">
+            <p class="text-white mb-2 fw-semibold">Some popular searches:</p>
+          </div>
+
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a href="document.html?id=doc-001" class="nav-link text-white">AID-001 Containment</a>
+            </li>
+            <li class="nav-item">
+              <a href="document.html?id=doc-013" class="nav-link text-white">AID-013 IBDP</a>
+            </li>
+          </ul>
+        </aside>
+
+
+      <!-- Document content -->
+      <div class="doc-main-content container py-5">
+        <section class="mt-4">
+          <h2 id="doc-title" class="mb-4">Loading...</h2>
+          <div id="doc-content"></div>
+        </section>
+      </div>
+    </main>
+
+
+  <footer>
+    <p>&copy; 2025 Game Name. All rights reserved.</p>
+  </footer>
+
+    <script>
+      let documents = [];
+
+      // Laad de documentenlijst
+      fetch('docs.json')
+        .then(res => res.json())
+        .then(data => {
+          documents = data;
+
+          // Als er een ID in de URL staat → toon PDF
+          const params = new URLSearchParams(window.location.search);
+          const docId = params.get('id');
+
+          if (docId) {
+            const doc = documents.find(d => d.id === docId);
+            const titleEl = document.getElementById('doc-title');
+            const contentEl = document.getElementById('doc-content');
+
+            if (!doc) {
+              titleEl.textContent = "Document not found";
+              contentEl.innerHTML = "<p>We couldn’t find the document you're looking for.</p>";
+              return;
+            }
+
+            titleEl.textContent = `${doc.id} – ${doc.title}`;
+            contentEl.innerHTML = `
+              <iframe 
+                src="${doc.pdf}" 
+                width="100%" 
+                height="800px" 
+                style="border: none; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+              </iframe>
+            `;
+          }
+        });
+
+      // Simpele zoekfunctie met gelijkenis-score
+      function getSimilarityScore(query, target) {
+        query = query.toLowerCase();
+        target = target.toLowerCase();
+        if (target.includes(query)) return 1;
+        let score = 0;
+        for (let i = 0; i < query.length; i++) {
+          if (target.includes(query[i])) score += 1;
+        }
+        return score / target.length;
+      }
+
+      document.getElementById('searchInput').addEventListener('input', function () {
+        const query = this.value.trim().toLowerCase();
+        const titleEl = document.getElementById('doc-title');
+        const contentEl = document.getElementById('doc-content');
+
+        if (!query || query.length < 2) {
+          titleEl.textContent = "Enter a search query to begin";
+          contentEl.innerHTML = "";
+          return;
+        }
+
+        const matches = documents
+          .map(doc => {
+            const score = Math.max(
+              getSimilarityScore(query, doc.title),
+              getSimilarityScore(query, doc.id)
+            );
+            return { ...doc, score };
+          })
+          .filter(doc => doc.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 10); // Max 10 resultaten tonen
+
+        titleEl.textContent = `Search Results for "${query}"`;
+
+        if (matches.length === 0) {
+          contentEl.innerHTML = "<p>No matching documents found.</p>";
+          return;
+        }
+
+        // Toon resultaten als klikbare lijst
+        contentEl.innerHTML = `
+          <ul class="list-group">
+            ${matches.map(doc => `
+              <li class="list-group-item list-group-item-dark" style="cursor: pointer;" onclick="window.location.href='document.html?id=${doc.id}'">
+                ${doc.id} – ${doc.title}
+              </li>
+            `).join('')}
+          </ul>
+        `;
+      });
+    </script>
+
+</body>
+
+</html>
